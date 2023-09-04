@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+        .chat-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 400px;
+            overflow-y: scroll;
+        }
+        .user-msg, .bot-msg {
+            margin: 5px 0;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+        }
+        .input-box {
+            flex-grow: 1;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Chatbot</h1>
+        <div class="chat-container" id="chat-container">
+            <!-- Bot and user messages will be displayed here -->
+        </div>
+        <div class="input-container">
+            <input class="input-box" type="text" id="user_input" placeholder="Type your message...">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-btn');
+
+        sendButton.addEventListener('click', async () => {
+            const userMessage = userInput.value;
+            appendUserMessage(userMessage);
+            userInput.value = '';
+
+            // Send user message to Flask backend
+            const response = await fetch('/webhook', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `user_input=${encodeURIComponent(userMessage)}`
+            });
+
+            const jsonResponse = await response.json();
+            const botResponse = jsonResponse.response;
+            appendBotMessage(botResponse);
+        });
+
+        function appendUserMessage(message) {
+            const userMsgElement = document.createElement('div');
+            userMsgElement.className = 'user-msg';
+            userMsgElement.textContent = `You: ${message}`;
+            chatContainer.appendChild(userMsgElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function appendBotMessage(message) {
+            const botMsgElement = document.createElement('div');
+            botMsgElement.className = 'bot-msg';
+            botMsgElement.textContent = `Bot: ${message}`;
+            chatContainer.appendChild(botMsgElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
